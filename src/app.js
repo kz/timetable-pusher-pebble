@@ -9,9 +9,12 @@ var TIMELINE_TOKEN;
 var API_KEY;
 
 var timetables = [];
-var selectedTimetable = '';
-var selectedWeek = '';
-var selectedDay = '';
+var selectedTimetable = {
+    id: 0,
+    title: 'Undefined'
+};
+var selectedWeek = 'Undefined';
+var selectedDay = -1;
 
 /*
  * App Start
@@ -60,7 +63,7 @@ Settings.config(
 
 var viewSetupCard = new UI.Card({
     title: 'Setup Required',
-    body: 'Your API token is missing or required. \n\nOpen this app\'s configuration page on the Pebble watchapp and enter your API token.',
+    body: 'Your API token is missing or required. \nOpen this app\'s configuration page on the Pebble phone app and enter your API token.',
     scrollable: true
 });
 
@@ -150,7 +153,7 @@ var viewDayMenu = new UI.Menu({
  */
 
 // Check whether the API key is set
-var checkReady = function () {
+function checkReady() {
     if (typeof Settings.option('apiKey') === 'undefined') {
         viewSetupCard.show();
     } else {
@@ -172,31 +175,31 @@ Pebble.addEventListener("ready", function () {
             }
     );
 
+    /*
+     * View Handlers
+     */
+
+    viewHomeMenu.on('longClick', 'click', function (e) {
+        if (e.item.title === 'Delete all pins') {
+            deletePins();
+        } else if(e.sectionIndex === 1) {
+            selectedTimetable = timetables[e.itemIndex];
+            viewWeekMenu.show();
+        }
+    });
+
+    viewWeekMenu.on('longClick', 'click', function(e) {
+        if (e.sectionIndex === 1) {
+            if (e.item.index === 0) {
+                selectedWeek = 'current';
+            } else {
+                selectedWeek = 'next';
+            }
+            viewDayMenu.show();
+        }
+    });
+
     checkReady();
-});
-
-/*
- * View Handlers
- */
-
-viewHomeMenu.on('select', function (e) {
-    if (e.item.title === 'Delete all pins') {
-        deletePins();
-    } else if(e.sectionIndex === 1) {
-        selectedTimetable = timetables[e.itemIndex];
-        viewWeekMenu.show();
-    }
-});
-
-viewWeekMenu.on('select', function(e) {
-   if (e.sectionIndex === 1) {
-       if (e.item.index === 0) {
-           selectedWeek = 'current';
-       } else {
-           selectedWeek = 'next';
-       }
-       viewDayMenu.show();
-   }
 });
 
 /*
@@ -218,6 +221,8 @@ function getTimetables() {
             function (data, status, request) {
                 viewHomeMenu.show();
                 viewLoadingCard.hide();
+
+                timetables = [];
                 for (var i = 0; i < Object.keys(data).length; i++) {
                     timetables.push({
                         id: data[i].id,
