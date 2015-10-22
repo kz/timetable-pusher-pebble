@@ -5,9 +5,13 @@ var ajax = require('ajax');
 var BASE_URL = 'https://timetablepush.me/';
 var API_BASE_URL = BASE_URL + 'api/v1/';
 var CONFIGURATION_URL = BASE_URL + 'app/config';
+var TIMELINE_TOKEN;
 var API_KEY;
 
-var timelines = [];
+var timetables = [];
+var selectedTimetable = '';
+var selectedWeek = '';
+var selectedDay = '';
 
 /*
  * App Start
@@ -56,7 +60,8 @@ Settings.config(
 
 var viewSetupCard = new UI.Card({
     title: 'Setup Required',
-    body: 'Your API token is missing or required. \n\nOpen this app\'s configuration page on the Pebble watchapp and enter your API token.'
+    body: 'Your API token is missing or required. \n\nOpen this app\'s configuration page on the Pebble watchapp and enter your API token.',
+    scrollable: true
 });
 
 var viewConfigurationCard = new UI.Card({
@@ -71,9 +76,18 @@ var viewLoadingCard = new UI.Card({
 
 var viewErrorCard = new UI.Card({
     title: 'Error',
-    body: 'An unknown error occured.'
+    body: 'An unknown error occured. Restart the app and try again.'
 });
 
+var viewCreatedCard = new UI.Card({
+    title: 'Pins Created',
+    body: 'Your timeline pins have been created. It may take up to 15 minutes for the changes to take effect.'
+});
+
+var viewDeletedCard = new UI.Card({
+    title: 'Pins Deleted',
+    body: 'All pins have been deleted. It may take up to 15 minutes for the changes to to take effect.'
+});
 
 var viewHomeMenu = new UI.Menu({
     sections: [
@@ -81,7 +95,7 @@ var viewHomeMenu = new UI.Menu({
             title: 'Timetable Pusher'
         },
         {
-            title: 'Select Timeline',
+            title: 'Select Timetable',
             items: []
         },
         {
@@ -98,18 +112,35 @@ var viewHomeMenu = new UI.Menu({
 var viewWeekMenu = new UI.Menu({
     sections: [
         {
-            title: 'Timetable Pusher'
+            title: selectedTimetable.title
         },
         {
-            title: 'Add entries for',
+            title: 'Add entries to',
             items: [
                 {
-                    title: 'Current week'
+                    title: 'This week'
                 },
                 {
                     title: 'Next week'
                 }
             ]
+        }
+    ]
+});
+
+var viewDayMenu = new UI.Menu({
+    section: [
+        {
+            title: 'Push pins for:',
+            items: [
+                {
+                    title: 'Whole week'
+                }
+            ]
+        },
+        {
+            title: 'Specific day:',
+            items: []
         }
     ]
 });
@@ -125,13 +156,22 @@ var checkReady = function () {
     } else {
         viewSetupCard.hide();
         API_KEY = Settings.option('apiKey');
-        getTimelines();
+        getTimetables();
     }
 
     viewMain.hide();
 };
 
 Pebble.addEventListener("ready", function () {
+    Pebble.getTimelineToken(
+            function (token) {
+                TIMELINE_TOKEN = token;
+            },
+            function (error) {
+                console.log('Error getting timeline token: ' + error);
+            }
+    );
+
     checkReady();
 });
 
@@ -140,20 +180,30 @@ Pebble.addEventListener("ready", function () {
  */
 
 viewHomeMenu.on('select', function (e) {
-    if (e.item.title === 'Current week') {
-
-    } else if (e.item.title === 'Next week') {
-
-    } else if (e.item.title === 'Delete all pins') {
-
+    if (e.item.title === 'Delete all pins') {
+        deletePins();
+    } else if(e.sectionIndex === 1) {
+        selectedTimetable = timetables[e.itemIndex];
+        viewWeekMenu.show();
     }
+});
+
+viewWeekMenu.on('select', function(e) {
+   if (e.sectionIndex === 1) {
+       if (e.item.index === 0) {
+           selectedWeek = 'current';
+       } else {
+           selectedWeek = 'next';
+       }
+       viewDayMenu.show();
+   }
 });
 
 /*
  * Internet-dependent functions
  */
 
-function getTimelines() {
+function getTimetables() {
     viewLoadingCard.show();
 
     ajax(
@@ -169,14 +219,68 @@ function getTimelines() {
                 viewHomeMenu.show();
                 viewLoadingCard.hide();
                 for (var i = 0; i < Object.keys(data).length; i++) {
-                    timelines.push({
+                    timetables.push({
                         id: data[i].id,
                         title: data[i].name
                     });
                 }
-                for (i = 0; i < Object.keys(timelines).length; i++) {
-                    viewHomeMenu.item(1, i, {title: timelines[i].title});
+                for (i = 0; i < Object.keys(timetables).length; i++) {
+                    viewHomeMenu.item(1, i, {title: timetables[i].title});
                 }
+            },
+            function (error, status, request) {
+                handleError(error, status, request);
+            }
+    );
+}
+
+function createPins(timetableId, week, day) {
+    viewLoadingCard.show();
+
+    var offsetFromUTC = 0 - (new Date()).getTimezoneOffset();
+
+    ajax(
+            {
+                url: API_BASE_URL + 'job',
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer: ' + API_KEY
+                },
+                data: {
+                    timetable_id: timetableId,
+                    timeline_token: TIMELINE_TOKEN,
+                    offset_from_utc: offsetFromUTC,
+                    week: week,
+                    day: day
+                }
+            },
+            function (data, status, request) {
+                viewCreatedCard.show();
+                viewLoadingCard.hide();
+            },
+            function (error, status, request) {
+                handleError(error, status, request);
+            }
+    );
+}
+
+function deletePins() {
+    viewLoadingCard.show();
+
+    ajax(
+            {
+                url: API_BASE_URL + 'job',
+                method: 'DELETE',
+                headers: {
+                    Authorization: 'Bearer: ' + API_KEY
+                },
+                data: {
+                    timeline_token: TIMELINE_TOKEN
+                }
+            },
+            function (data, status, request) {
+                viewDeletedCard.show();
+                viewLoadingCard.hide();
             },
             function (error, status, request) {
                 handleError(error, status, request);
@@ -200,4 +304,7 @@ function handleError(error, status, request) {
     viewLoadingCard.hide();
     viewHomeMenu.hide();
     viewWeekMenu.hide();
+    viewCreatedCard.hide();
+    viewDeletedCard.hide();
+    viewDayMenu.hide();
 }
