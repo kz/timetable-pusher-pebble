@@ -1,5 +1,4 @@
 var UI = require('ui');
-var Vector2 = require('vector2');
 var Settings = require('settings');
 
 var BASE_URL = 'https://timetablepush.me/';
@@ -24,22 +23,24 @@ viewMain.show();
 Settings.config(
   { 
     url: CONFIGURATION_URL,
-    autoSave: true,
+    autoSave: true
   },
   function(e) {
     
   },
   function(e) {
     console.log('Configuration closed');
+    checkReady();
   }
 );
 
 // Listen for configuration complete
 Settings.config(
-  { url: CONFIGURATION_URL },
+  { url: CONFIGURATION_URL,
+    autoSave: true },
   function(e) {
     console.log('Configuration closed');
-    Settings.option('apiKey', e.apiKey);
+    checkReady();
   }
 );
 
@@ -47,12 +48,12 @@ Settings.config(
  * Views
  */
 
-var createViewSetupCard = new UI.Card({
+var viewSetupCard = new UI.Card({
   title: 'Setup Required',
   body: 'Open this app\'s configuration page on the Pebble watchapp.'
 });
 
-var createViewHomeMenu = new UI.Menu({
+var viewHomeMenu = new UI.Menu({
   sections: [{
     title: 'Timetable Pusher',
   },
@@ -78,16 +79,24 @@ var createViewHomeMenu = new UI.Menu({
  */
 
 // Check whether the API key is set
-Pebble.addEventListener("ready", function() {
+var checkReady = function () {
   if (typeof Settings.option('apiKey') === 'undefined') {
-    var viewSetupCard = createViewSetupCard;
     viewSetupCard.show();
   } else {
-    var viewHomeMenu = createViewHomeMenu;
+    viewSetupCard.hide();
     viewHomeMenu.show();
   }
   
   viewMain.hide();
+};
+
+Pebble.addEventListener("ready", function() {
+  checkReady();
+});
+
+viewSetupCard.on('select', function(e) {
+  console.log('Selected item #' + e.itemIndex + ' of section #' + e.sectionIndex);
+  console.log('The item is titled "' + e.item.title + '"');
 });
 
 /*
