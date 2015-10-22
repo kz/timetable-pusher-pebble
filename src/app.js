@@ -47,7 +47,48 @@ Settings.config(
  * Views
  */
 
+var createViewSetupCard = new UI.Card({
+  title: 'Setup Required',
+  body: 'Open this app\'s configuration page on the Pebble watchapp.'
+});
 
+var createViewHomeMenu = new UI.Menu({
+  sections: [{
+    title: 'Timetable Pusher',
+  },
+  {
+    title: 'Add entries for',
+    items: [{
+      title: 'Current week'
+    },
+    {
+      title: 'Next week'
+    }]
+  },  
+  {
+    title: 'Advanced',
+    items: [{
+      title: 'Delete all pins'
+    }],
+  }]
+});
+
+/*
+ * App Ready
+ */
+
+// Check whether the API key is set
+Pebble.addEventListener("ready", function() {
+  if (typeof Settings.option('apiKey') === 'undefined') {
+    var viewSetupCard = createViewSetupCard;
+    viewSetupCard.show();
+  } else {
+    var viewHomeMenu = createViewHomeMenu;
+    viewHomeMenu.show();
+  }
+  
+  viewMain.hide();
+});
 
 /*
  * Error Handlers
