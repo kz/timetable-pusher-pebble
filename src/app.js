@@ -8,6 +8,16 @@ var CONFIGURATION_URL = BASE_URL + 'app/config';
 var TIMELINE_TOKEN;
 var API_KEY;
 
+var DAYS_OF_WEEK = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday'
+];
+
 var timetables = [];
 var selectedTimetable = {
     id: 0,
@@ -163,7 +173,7 @@ function checkReady() {
     }
 
     viewMain.hide();
-};
+}
 
 Pebble.addEventListener("ready", function () {
     Pebble.getTimelineToken(
@@ -179,16 +189,16 @@ Pebble.addEventListener("ready", function () {
      * View Handlers
      */
 
-    viewHomeMenu.on('longClick', 'click', function (e) {
+    viewHomeMenu.on('select', 'click', function (e) {
         if (e.item.title === 'Delete all pins') {
             deletePins();
-        } else if(e.sectionIndex === 1) {
+        } else if (e.sectionIndex === 1) {
             selectedTimetable = timetables[e.itemIndex];
             viewWeekMenu.show();
         }
     });
 
-    viewWeekMenu.on('longClick', 'click', function(e) {
+    viewWeekMenu.on('select', 'click', function (e) {
         if (e.sectionIndex === 1) {
             if (e.item.index === 0) {
                 selectedWeek = 'current';
@@ -196,6 +206,49 @@ Pebble.addEventListener("ready", function () {
                 selectedWeek = 'next';
             }
             viewDayMenu.show();
+
+            var days = [];
+            if (selectedWeek === 'current') {
+                var d = new Date();
+                var dayOfWeek = d.getDay() === 0 ? 6 : d.getDay() - 1;
+
+                for (var i = dayOfWeek; i < 7; i++) {
+                    days.push({
+                        title: DAYS_OF_WEEK[i]
+                    });
+                }
+            } else {
+                for (var i = 0; i < 7; i++) {
+                    days.push({
+                        title: DAYS_OF_WEEK[i]
+                    });
+                }
+            }
+            viewDayMenu.item(1, days);
+        }
+    });
+
+    viewDayMenu.on('select', 'click', function (e) {
+        if (e.item.title === 'Whole week') {
+            createPins(selectedTimetable.id, selectedWeek, null);
+        } else if (e.sectionIndex === 1) {
+            if (e.item.title === 'Monday') {
+                selectedDay = 0;
+            } else if (e.item.title === 'Tuesday') {
+                selectedDay = 1;
+            } else if (e.item.title === 'Wednesday') {
+                selectedDay = 2;
+            } else if (e.item.title === 'Thursday') {
+                selectedDay = 3;
+            } else if (e.item.title === 'Friday') {
+                selectedDay = 4;
+            } else if (e.item.title === 'Saturday') {
+                selectedDay = 5;
+            } else if (e.item.title === 'Sunday') {
+                selectedDay = 6;
+            }
+
+            createPins(selectedTimetable.id, selectedWeek, selectedDay);
         }
     });
 
@@ -244,6 +297,17 @@ function createPins(timetableId, week, day) {
 
     var offsetFromUTC = 0 - (new Date()).getTimezoneOffset();
 
+    var data = {
+        timetable_id: timetableId,
+        timeline_token: TIMELINE_TOKEN,
+        offset_from_utc: offsetFromUTC,
+        week: week
+    };
+
+    if (day !== null) {
+        data.day = day;
+    }
+
     ajax(
             {
                 url: API_BASE_URL + 'job',
@@ -251,13 +315,7 @@ function createPins(timetableId, week, day) {
                 headers: {
                     Authorization: 'Bearer: ' + API_KEY
                 },
-                data: {
-                    timetable_id: timetableId,
-                    timeline_token: TIMELINE_TOKEN,
-                    offset_from_utc: offsetFromUTC,
-                    week: week,
-                    day: day
-                }
+                data: data
             },
             function (data, status, request) {
                 viewCreatedCard.show();
