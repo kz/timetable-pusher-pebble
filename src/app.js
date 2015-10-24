@@ -184,74 +184,7 @@ Pebble.addEventListener("ready", function () {
                 console.log('Error getting timeline token: ' + error);
             }
     );
-
-    /*
-     * View Handlers
-     */
-
-    viewHomeMenu.on('select', 'click', function (e) {
-        if (e.item.title === 'Delete all pins') {
-            deletePins();
-        } else if (e.sectionIndex === 1) {
-            selectedTimetable = timetables[e.itemIndex];
-            viewWeekMenu.show();
-        }
-    });
-
-    viewWeekMenu.on('select', 'click', function (e) {
-        if (e.sectionIndex === 1) {
-            if (e.item.index === 0) {
-                selectedWeek = 'current';
-            } else {
-                selectedWeek = 'next';
-            }
-            viewDayMenu.show();
-
-            var days = [];
-            if (selectedWeek === 'current') {
-                var d = new Date();
-                var dayOfWeek = d.getDay() === 0 ? 6 : d.getDay() - 1;
-
-                for (var i = dayOfWeek; i < 7; i++) {
-                    days.push({
-                        title: DAYS_OF_WEEK[i]
-                    });
-                }
-            } else {
-                for (var i = 0; i < 7; i++) {
-                    days.push({
-                        title: DAYS_OF_WEEK[i]
-                    });
-                }
-            }
-            viewDayMenu.item(1, days);
-        }
-    });
-
-    viewDayMenu.on('select', 'click', function (e) {
-        if (e.item.title === 'Whole week') {
-            createPins(selectedTimetable.id, selectedWeek, null);
-        } else if (e.sectionIndex === 1) {
-            if (e.item.title === 'Monday') {
-                selectedDay = 0;
-            } else if (e.item.title === 'Tuesday') {
-                selectedDay = 1;
-            } else if (e.item.title === 'Wednesday') {
-                selectedDay = 2;
-            } else if (e.item.title === 'Thursday') {
-                selectedDay = 3;
-            } else if (e.item.title === 'Friday') {
-                selectedDay = 4;
-            } else if (e.item.title === 'Saturday') {
-                selectedDay = 5;
-            } else if (e.item.title === 'Sunday') {
-                selectedDay = 6;
-            }
-
-            createPins(selectedTimetable.id, selectedWeek, selectedDay);
-        }
-    });
-
+    console.log('Hey ho!');
     checkReady();
 });
 
@@ -356,10 +289,13 @@ function deletePins() {
  */
 
 function handleError(error, status, request) {
+    console.log(JSON.stringify(error));
+    console.log(JSON.stringify(status));
+    console.log(JSON.stringify(request));
+
     if (status === 401) {
         viewSetupCard.show();
     } else {
-        console.log(error, status, request);
         viewErrorCard.show();
     }
 
