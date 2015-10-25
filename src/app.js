@@ -15,6 +15,7 @@ var selectedTimetable = {
     title: 'undefined'
 };
 var selectedWeek = 'undefined';
+var selectedDay = -1;
 
 var DAYS_OF_WEEK = [
     'Monday',
@@ -69,9 +70,19 @@ var viewLoadingCard = new UI.Card({
     body: 'If this is still loading after some time, ensure you have a valid Internet connection and restart the app.'
 });
 
+var viewTimelineErrorCard = new UI.Card({
+    title: 'Error',
+    body: 'Your timeline token could not be retrieved. Restart the app and try again.'
+});
+
 var viewErrorCard = new UI.Card({
     title: 'Error',
     body: 'An unknown error occured. Restart the app and try again.'
+});
+
+var viewCreatedCard = new UI.Card({
+    title: 'Pins Created',
+    body: 'Your timeline pins have been created. It may take up to 15 minutes for the changes to take effect.'
 });
 
 var viewDeletedCard = new UI.Card({
@@ -152,13 +163,13 @@ function checkReady() {
 Pebble.getTimelineToken(
     function (token) {
         TIMELINE_TOKEN = token;
+        checkReady();
     },
     function (error) {
         console.log('Error getting timeline token: ' + error);
+        viewTimelineErrorCard.show();
     }
 );
-
-checkReady();
 
 /*
  * View Handlers
@@ -205,6 +216,30 @@ viewWeekMenu.on('select', function (e) {
     }
 });
 
+viewDayMenu.on('select', function (e) {
+    if (e.item.title == 'Whole week') {
+        createPins(selectedTimetable.id, selectedWeek, null);
+    } else if (e.sectionIndex === 1) {
+        if (e.item.title === 'Monday') {
+            selectedDay = 0;
+        } else if (e.item.title === 'Tuesday') {
+            selectedDay = 1;
+        } else if (e.item.title === 'Wednesday') {
+            selectedDay = 2;
+        } else if (e.item.title === 'Thursday') {
+            selectedDay = 3;
+        } else if (e.item.title === 'Friday') {
+            selectedDay = 4;
+        } else if (e.item.title === 'Saturday') {
+            selectedDay = 5;
+        } else if (e.item.title === 'Sunday') {
+            selectedDay = 6;
+        }
+
+        createPins(selectedTimetable.id, selectedWeek, selectedDay);
+    }
+});
+
 /*
  * Internet-dependent functions
  */
@@ -234,6 +269,42 @@ function getTimetables() {
     );
 }
 
+function createPins(timetableId, week, day) {
+    viewLoadingCard.show();
+
+    var offsetFromUTC = 0 - (new Date()).getTimezoneOffset();
+
+    var data = {
+        timetable_id: timetableId,
+        timeline_token: TIMELINE_TOKEN,
+        offset_from_utc: offsetFromUTC,
+        week: week
+    };
+
+    if (day !== null) {
+        data.day = day;
+    }
+
+    ajax(
+            {
+                url: API_BASE_URL + 'job/create',
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer: ' + API_KEY
+                },
+                data: data
+            },
+            function (data, status, request) {
+                viewCreatedCard.show();
+                viewLoadingCard.hide();
+            },
+            function (error, status, request) {
+                viewLoadingCard.hide();
+                handleError(error, status, request);
+            }
+    );
+}
+
 function deletePins() {
     viewLoadingCard.show();
 
@@ -253,6 +324,7 @@ function deletePins() {
                 viewLoadingCard.hide();
             },
             function (error, status, request) {
+                viewLoadingCard.hide();
                 handleError(error, status, request);
             }
     );
