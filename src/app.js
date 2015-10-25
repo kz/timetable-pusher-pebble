@@ -14,7 +14,18 @@ var selectedTimetable = {
     id: -1,
     title: 'undefined'
 };
+var selectedWeek = 'undefined';
 
+var DAYS_OF_WEEK = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday'
+];
+    
 /*
  * Configuration
  */
@@ -109,6 +120,23 @@ var viewWeekMenu = new UI.Menu({
     ]
 });
 
+var viewDayMenu = new UI.Menu({
+    sections: [
+        {
+            title: 'Push pins for:',
+            items: [
+                {
+                    title: 'Whole week'
+                }
+            ]
+        },
+        {
+            title: 'Specific day:',
+            items: []
+        }
+    ]
+});
+
 // Check whether the API key is set
 function checkReady() {
     if (typeof Settings.option('apiKey') === 'undefined') {
@@ -137,9 +165,6 @@ checkReady();
  */
 
 viewHomeMenu.on('select', function (e) {
-    console.log('Selected item #' + e.itemIndex + ' of section #' + e.sectionIndex);
-    console.log('The item is titled "' + e.item.title + '"');
-    
     if (e.sectionIndex === 2 && e.itemIndex === 0) {
         deletePins();
     } else if (e.sectionIndex === 1) {
@@ -147,6 +172,36 @@ viewHomeMenu.on('select', function (e) {
         selectedTimetable.title = timetables[e.itemIndex].title;
         viewWeekMenu.section(0, { title: selectedTimetable.title });
         viewWeekMenu.show();
+    }
+});
+
+viewWeekMenu.on('select', function (e) {
+    if (e.sectionIndex === 1) {
+        if (e.itemIndex === 0) {
+            selectedWeek = 'current';
+        } else {
+            selectedWeek = 'next';
+        }
+
+        var days = [];
+        if (selectedWeek === 'current') {
+            var d = new Date();
+            var dayOfWeek = d.getDay() === 0 ? 6 : d.getDay() - 1;
+
+            for (var i = dayOfWeek; i < 7; i++) {
+                days.push({
+                    title: DAYS_OF_WEEK[i]
+                });
+            }
+        } else {
+            for (var i = 0; i < 7; i++) {
+                days.push({
+                    title: DAYS_OF_WEEK[i]
+                });
+            }
+        }
+        viewDayMenu.items(1, days);
+        viewDayMenu.show();
     }
 });
 
