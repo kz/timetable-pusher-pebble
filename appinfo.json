@@ -3,7 +3,7 @@
     "capabilities": [
         "configurable"
     ],
-    "companyName": "pebble@iamkelv.in",
+    "companyName": "Kelvin Z.",
     "longName": "Timetable Pusher",
     "projectType": "pebblejs",
     "resources": {
@@ -37,7 +37,7 @@
         "aplite",
         "basalt"
     ],
-    "uuid": "51f3c712-0fb1-4225-8e6a-98cc1f24cd16",
+    "uuid": "969f8628-b609-4021-9485-e20b3dd101ae",
     "versionCode": 1,
     "versionLabel": "0.1",
     "watchapp": {
