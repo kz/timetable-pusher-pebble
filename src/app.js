@@ -163,6 +163,7 @@ function checkReady() {
 Pebble.getTimelineToken(
     function (token) {
         TIMELINE_TOKEN = token;
+        console.log('Got timeline token: ' + TIMELINE_TOKEN);
         checkReady();
     },
     function (error) {
