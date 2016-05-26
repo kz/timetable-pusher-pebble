@@ -3,45 +3,23 @@
     "capabilities": [
         "configurable"
     ],
-    "companyName": "Kelvin Z.",
+    "companyName": "pebble@iamkelv.in",
+    "enableMultiJS": true,
     "longName": "Timetable Pusher",
-    "projectType": "pebblejs",
+    "projectType": "native",
     "resources": {
-        "media": [
-            {
-                "file": "images/menu_icon.png",
-                "menuIcon": true,
-                "name": "IMAGE_MENU_ICON",
-                "type": "png"
-            },
-            {
-                "file": "images/logo_splash.png",
-                "name": "IMAGE_LOGO_SPLASH",
-                "type": "png"
-            },
-            {
-                "file": "images/tile_splash.png",
-                "name": "IMAGE_TILE_SPLASH",
-                "type": "png"
-            },
-            {
-                "file": "fonts/UbuntuMono-Regular.ttf",
-                "name": "MONO_FONT_14",
-                "type": "font"
-            }
-        ]
+        "media": []
     },
     "sdkVersion": "3",
     "shortName": "Timetable Pusher",
     "targetPlatforms": [
         "aplite",
-        "basalt"
+        "basalt",
+        "chalk"
     ],
     "uuid": "6ca10f13-4c88-40b2-9305-ed0539dd7629",
-    "versionCode": 1,
-    "versionLabel": "0.1",
+    "versionLabel": "2.0",
     "watchapp": {
-        "hiddenApp": false,
         "watchface": false
     }
 }
