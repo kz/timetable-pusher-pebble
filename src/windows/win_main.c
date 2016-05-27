@@ -14,6 +14,7 @@ static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t secti
 static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data);
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data);
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data);
+static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data);
 
 void win_main_create(void) {
     s_main_window = window_create();
@@ -68,7 +69,7 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
       // Use the row to specify which item we'll draw
       switch (cell_index->row) {
         case 0:
-          menu_cell_basic_draw(ctx, cell_layer, "Week A", NULL, NULL);
+          menu_cell_basic_draw(ctx, cell_layer, "Loading...", NULL, NULL);
           break;
       }
       break;
@@ -78,6 +79,14 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
           menu_cell_basic_draw(ctx, cell_layer, "Delete all pins", NULL, NULL);
           break;
       }
+  }
+}
+
+static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
+  switch (cell_index->row) {
+    case 1:
+      layer_mark_dirty(menu_layer_get_layer(menu_layer));
+      break;
   }
 }
 
@@ -94,9 +103,13 @@ static void window_load(Window *window) {
         .get_header_height = menu_get_header_height_callback,
         .draw_header = menu_draw_header_callback,
         .draw_row = menu_draw_row_callback,
-//         .select_click = menu_select_callback,
+        .select_click = menu_select_callback,
     });
     
+    // Bind the menu layer's click config provider to the window for interactivity
+    menu_layer_set_click_config_onto_window(s_menu_layer, window);
+    
+    // Add the menu layer to the window layr
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
 }
 
