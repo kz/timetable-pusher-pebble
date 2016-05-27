@@ -9,6 +9,7 @@ static void deinit(void);
 static void init() {
     // Create main window
     win_main_create();
+//     app_message_open(64, 64);
 }
 
 static void deinit() {

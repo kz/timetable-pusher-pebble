@@ -23,11 +23,25 @@ function getDaysInCurrentWeek() {
 Pebble.addEventListener('ready', function() {
     // PebbleKit JS is ready!
     console.log('PebbleKit JS ready!');
+    
+    // Get the UTC offset
     var offsetFromUTC = 0 - (new Date()).getTimezoneOffset();
     console.log(offsetFromUTC);
-    
-    var days = getDaysInCurrentWeek();    
-    console.log(days);
 
+    // Get days in current week
+    var daysInCurrentWeek = getDaysInCurrentWeek();
+    
+    // Get user's list of timetables
+    
+    // Send AppMessage
+    var dict = {
+        'daysInCurrentWeek' : daysInCurrentWeek
+    };
+    Pebble.sendAppMessage(dict, function() {
+      console.log('Message sent successfully: ' + JSON.stringify(dict));
+    }, function(e) {
+      console.log('Message failed: ' + JSON.stringify(e));
+    });
+    
 });
 

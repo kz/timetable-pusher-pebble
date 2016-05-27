@@ -1,5 +1,7 @@
 {
-    "appKeys": {},
+    "appKeys": {
+        "daysInCurrentWeek": 0
+    },
     "capabilities": [
         "configurable"
     ],
@@ -17,7 +19,7 @@
         "basalt",
         "chalk"
     ],
-    "uuid": "6ca10f13-4c88-40b2-9305-ed0539dd7629",
+    "uuid": "6bc72354-bdef-4fa6-baff-d6d5913dbf38",
     "versionLabel": "2.0",
     "watchapp": {
         "watchface": false

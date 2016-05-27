@@ -1,15 +1,19 @@
 #include <pebble.h>
 
-#define NUM_MENU_SECTIONS 1
+#define NUM_MENU_SECTIONS 2
 #define NUM_FIRST_SECTION_ITEMS 1
+#define NUM_SECOND_SECTION_ITEMS 1
 
 static Window *s_main_window;
-static SimpleMenuLayer *s_simple_menu_layer;
-static SimpleMenuSection s_menu_sections[NUM_MENU_SECTIONS];
-static SimpleMenuItem s_first_section_items[NUM_FIRST_SECTION_ITEMS];
+static MenuLayer *s_menu_layer;
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
+static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data);
+static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data);
+static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data);
+static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data);
+static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data);
 
 void win_main_create(void) {
     s_main_window = window_create();
@@ -26,29 +30,77 @@ void win_main_destroy(void) {
 
 // -------------------------------------------------------------- //
 
-static void window_load(Window *window) {
-    // Create window's child layers
+static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
+  return NUM_MENU_SECTIONS;
+}
 
-    // Create the items under the main section
-    s_first_section_items[0] = (SimpleMenuItem) {
-        .title = "Test",
-    };
+static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
+  switch (section_index) {
+    case 0:
+      return NUM_FIRST_SECTION_ITEMS;
+    case 1:
+      return NUM_SECOND_SECTION_ITEMS;
+    default:
+      return 0;
+  }
+}
 
-    // Create the main section
-    s_menu_sections[0] = (SimpleMenuSection) {
-        .num_items = NUM_FIRST_SECTION_ITEMS,
-        .items = s_first_section_items,
-    };  
-    // Create the simple menu layer under the root window layer
+static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
+  return MENU_CELL_BASIC_HEADER_HEIGHT;
+}
+
+static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
+  switch (section_index) {
+    case 0:
+      // Draw title text in the section header
+      menu_cell_basic_header_draw(ctx, cell_layer, "Select Timetable");
+      break;
+    case 1:
+      menu_cell_basic_header_draw(ctx, cell_layer, "Advanced");
+      break;
+  }
+}
+
+static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
+  // Determine which section we're going to draw in
+  switch (cell_index->section) {
+    case 0:
+      // Use the row to specify which item we'll draw
+      switch (cell_index->row) {
+        case 0:
+          menu_cell_basic_draw(ctx, cell_layer, "Week A", NULL, NULL);
+          break;
+      }
+      break;
+    case 1:
+      switch (cell_index->row) {
+        case 0:
+          menu_cell_basic_draw(ctx, cell_layer, "Delete all pins", NULL, NULL);
+          break;
+      }
+  }
+}
+
+static void window_load(Window *window) {  
+    // Create root window layer
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_frame(window_layer);
-    s_simple_menu_layer = simple_menu_layer_create(bounds, window, s_menu_sections, NUM_MENU_SECTIONS, NULL);
-    layer_add_child(window_layer, simple_menu_layer_get_layer(s_simple_menu_layer));
+    
+    // Create menu layer
+    s_menu_layer = menu_layer_create(bounds);
+    menu_layer_set_callbacks(s_menu_layer, NULL, (MenuLayerCallbacks) {
+        .get_num_sections = menu_get_num_sections_callback,
+        .get_num_rows = menu_get_num_rows_callback,
+        .get_header_height = menu_get_header_height_callback,
+        .draw_header = menu_draw_header_callback,
+        .draw_row = menu_draw_row_callback,
+//         .select_click = menu_select_callback,
+    });
+    
+    layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
 }
 
 static void window_unload(Window *window) {
-    // Destroy window's child layers
-
-    // Destroy the simple menu layer
-    simple_menu_layer_destroy(s_simple_menu_layer);
+    // Destroy the menu layer
+    menu_layer_destroy(s_menu_layer);
 }
