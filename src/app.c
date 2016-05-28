@@ -20,15 +20,15 @@ int main(void) {
 
 static void init() {
     win_loading_create();
-//     app_message_open(64, 64);
-//     if (!persist_exists(API_KEY)) {
-//         APP_LOG(APP_LOG_LEVEL_INFO, "API KEY DOES NOT EXIST");
-//         window_stack_pop_all(true);
-//         win_setup_create();
-//     } else {
-//         window_stack_pop_all(true);
-//         win_main_create();
-//     }
+    //     app_message_open(64, 64);
+    //     if (!persist_exists(API_KEY)) {
+    //         APP_LOG(APP_LOG_LEVEL_INFO, "API KEY DOES NOT EXIST");
+    //         window_stack_pop_all(true);
+    //         win_setup_create();
+    //     } else {
+    window_stack_pop_all(true);
+    win_main_create();
+    //     }
 }
 
 static void deinit() {

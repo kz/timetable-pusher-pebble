@@ -1,5 +1,6 @@
 #include <pebble.h>
 #include "win_main.h"
+#include "win_tutorial.h"
 
 #define NUM_MENU_SECTIONS 2
 #define NUM_FIRST_SECTION_ITEMS 1
@@ -17,6 +18,8 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data);
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data);
 
+static bool has_timetables;
+
 void win_main_create(void) {
     s_main_window = window_create();
     window_set_window_handlers(s_main_window, (WindowHandlers) {
@@ -24,6 +27,8 @@ void win_main_create(void) {
         .unload = window_unload,
     });
     window_stack_push(s_main_window, true);
+
+    has_timetables = false;
 }
 
 void win_main_destroy(void) {
@@ -34,69 +39,99 @@ Window* get_main_window(void) {
     return s_main_window;
 }
 
+void menu_cell_round_compatible_header_draw(GContext* ctx, const Layer *cell_layer, const char *title) {
+    graphics_context_set_text_color(ctx, GColorBlack);
+    graphics_context_set_fill_color(ctx, GColorWhite);
+
+    GRect layer_size = layer_get_bounds(cell_layer);
+    graphics_fill_rect(ctx, GRect(0, 1, layer_size.size.w, 14), 0, GCornerNone);
+    #ifdef PBL_RECT
+    graphics_draw_text(ctx, title,
+                       fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+                       GRect(3, -2, layer_size.size.w - 3, 14), GTextOverflowModeWordWrap,
+                       GTextAlignmentLeft, NULL);
+    #else
+    graphics_draw_text(ctx, title,
+                       fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+                       GRect(3, -2, layer_size.size.w - 3, 14), GTextOverflowModeWordWrap,
+                       GTextAlignmentCenter, NULL);
+    #endif
+}
+
 // -------------------------------------------------------------- //
 
 static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data) {
-  return NUM_MENU_SECTIONS;
+    return NUM_MENU_SECTIONS;
 }
 
 static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
-  switch (section_index) {
-    case 0:
-      return NUM_FIRST_SECTION_ITEMS;
-    case 1:
-      return NUM_SECOND_SECTION_ITEMS;
-    default:
-      return 0;
-  }
+    switch (section_index) {
+        case 0:
+        return NUM_FIRST_SECTION_ITEMS;
+        case 1:
+        return NUM_SECOND_SECTION_ITEMS;
+        default:
+        return 0;
+    }
 }
 
 static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
-  return MENU_CELL_BASIC_HEADER_HEIGHT;
+    return MENU_CELL_BASIC_HEADER_HEIGHT;
 }
 
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
-  switch (section_index) {
-    case 0:
-      menu_cell_basic_header_draw(ctx, cell_layer, "Select Timetable");
-      break;
-    case 1:
-      menu_cell_basic_header_draw(ctx, cell_layer, "Advanced");
-      break;
-  }
+    switch (section_index) {
+        case 0:
+        menu_cell_round_compatible_header_draw(ctx, cell_layer, "Select Timetable");
+        break;
+        case 1:
+        menu_cell_round_compatible_header_draw(ctx, cell_layer, "Advanced");
+        break;
+    }
 }
 
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
-  switch (cell_index->section) {
-    case 0:
-      switch (cell_index->row) {
+    switch (cell_index->section) {
         case 0:
-          menu_cell_basic_draw(ctx, cell_layer, "Create one now!", NULL, NULL);
-          break;
-      }
-      break;
-    case 1:
-      switch (cell_index->row) {
-        case 0:
-          menu_cell_basic_draw(ctx, cell_layer, "Delete all pins", NULL, NULL);
-          break;
-      }
-  }
+        switch (cell_index->row) {
+            case 0:
+            menu_cell_basic_draw(ctx, cell_layer, "Create one now!", NULL, NULL);
+            break;
+        }
+        break;
+        case 1:
+        switch (cell_index->row) {
+            case 0:
+            menu_cell_basic_draw(ctx, cell_layer, "Delete all pins", NULL, NULL);
+            break;
+        }
+        break;
+    }
 }
 
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
-  switch (cell_index->row) {
-    case 1:
-      layer_mark_dirty(menu_layer_get_layer(menu_layer));
-      break;
-  }
+    switch (cell_index->section) {
+        case 0:
+        if (!has_timetables) {
+            win_tutorial_create();
+        }
+        break;
+        
+        case 1:
+        switch (cell_index->row) {
+            case 0:
+            // Delete all pins selected
+            break;
+        }
+        break;
+    }
 }
 
 static void window_load(Window *window) {  
     // Create root window layer
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_frame(window_layer);
-    
+
     // Create menu layer
     s_menu_layer = menu_layer_create(bounds);
     menu_layer_set_highlight_colors(s_menu_layer, 
@@ -110,10 +145,10 @@ static void window_load(Window *window) {
         .draw_row = menu_draw_row_callback,
         .select_click = menu_select_callback,
     });
-    
+
     // Bind the menu layer's click config provider to the window for interactivity
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
-    
+
     // Add the menu layer to the window layer
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
 }

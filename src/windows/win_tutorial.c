@@ -39,7 +39,7 @@ static void window_load(Window *window) {
     status_bar_layer_set_separator_mode(s_status_bar, StatusBarLayerSeparatorModeDotted);
     layer_add_child(window_layer, status_bar_layer_get_layer(s_status_bar));
 
-    s_text_layer = text_layer_create(GRect(0, 50, bounds.size.w, bounds.size.h));
+    s_text_layer = text_layer_create(GRect(0, PBL_IF_RECT_ELSE(50, 55), bounds.size.w, bounds.size.h));
     text_layer_set_text(s_text_layer, "Create a timetable by visiting\ntimetablepush.me\non a computer.");
     text_layer_set_text_color(s_text_layer, PBL_IF_COLOR_ELSE(GColorWhite, GColorBlack));
     text_layer_set_background_color(s_text_layer, GColorClear);
