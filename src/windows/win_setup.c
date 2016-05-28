@@ -54,7 +54,7 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, bitmap_layer_get_layer(s_icon_layer));
 
     #if defined(PBL_RECT)
-    const GEdgeInsets title_insets = {.top = 5};
+    const GEdgeInsets title_insets = {.top = 10};
     s_title_layer = text_layer_create(grect_inset(bounds, title_insets));
     text_layer_set_text(s_title_layer, DIALOG_CONFIG_WINDOW_APP_NAME);
     text_layer_set_text_color(s_title_layer, PBL_IF_COLOR_ELSE(GColorWhite, GColorBlack));
@@ -75,7 +75,10 @@ static void window_load(Window *window) {
     text_layer_set_font(s_body_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
     text_layer_set_text_alignment(s_body_layer, GTextAlignmentCenter);
     layer_add_child(window_layer, text_layer_get_layer(s_body_layer));
-    text_layer_enable_screen_text_flow_and_paging(s_body_layer, 2);
+    #ifdef PBL_ROUND
+    const uint8_t inset = 2;
+    text_layer_enable_screen_text_flow_and_paging(s_body_layer, inset);
+    #endif
 }
 
 static void window_unload(Window *window) {
