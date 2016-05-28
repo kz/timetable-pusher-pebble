@@ -1,6 +1,7 @@
 {
     "appKeys": {
-        "daysInCurrentWeek": 0
+        "apiKey": 0,
+        "daysInCurrentWeek": 1
     },
     "capabilities": [
         "configurable"
@@ -10,7 +11,14 @@
     "longName": "Timetable Pusher",
     "projectType": "native",
     "resources": {
-        "media": []
+        "media": [
+            {
+                "file": "images/config-required.png",
+                "name": "CONFIG_REQUIRED",
+                "targetPlatforms": null,
+                "type": "bitmap"
+            }
+        ]
     },
     "sdkVersion": "3",
     "shortName": "Timetable Pusher",

@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "win_main.h"
 
 #define NUM_MENU_SECTIONS 2
 #define NUM_FIRST_SECTION_ITEMS 1
@@ -27,6 +28,10 @@ void win_main_create(void) {
 
 void win_main_destroy(void) {
     window_destroy(s_main_window);
+}
+
+Window* get_main_window(void) {
+    return s_main_window;
 }
 
 // -------------------------------------------------------------- //
@@ -109,7 +114,7 @@ static void window_load(Window *window) {
     // Bind the menu layer's click config provider to the window for interactivity
     menu_layer_set_click_config_onto_window(s_menu_layer, window);
     
-    // Add the menu layer to the window layr
+    // Add the menu layer to the window layer
     layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
 }
 
