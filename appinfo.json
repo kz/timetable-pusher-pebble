@@ -1,7 +1,11 @@
 {
     "appKeys": {
-        "apiKey": 0,
-        "daysInCurrentWeek": 1
+        "DAY_OF_WEEK": 1,
+        "SELECTED_DAY": 5,
+        "SELECTED_TIMETABLE": 3,
+        "SELECTED_WEEK": 4,
+        "TIMETABLE_NAMES": 2,
+        "TYPE": 0
     },
     "capabilities": [
         "configurable"

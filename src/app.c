@@ -9,6 +9,7 @@
 
 static void init(void);
 static void deinit(void);
+static void inbox_received_handler(DictionaryIterator *iter, void *context);
 
 int main(void) {
     init();
@@ -18,17 +19,14 @@ int main(void) {
 
 // -------------------------------------------------------------- //
 
+static void inbox_received_handler(DictionaryIterator *iter, void *context) {
+    
+}
+
 static void init() {
     win_loading_create();
-    //     app_message_open(64, 64);
-    //     if (!persist_exists(API_KEY)) {
-    //         APP_LOG(APP_LOG_LEVEL_INFO, "API KEY DOES NOT EXIST");
-    //         window_stack_pop_all(true);
-    //         win_setup_create();
-    //     } else {
-    window_stack_pop_all(true);
-    win_main_create();
-    //     }
+    app_message_register_inbox_received(inbox_received_handler);
+    app_message_open(64, 64);
 }
 
 static void deinit() {
