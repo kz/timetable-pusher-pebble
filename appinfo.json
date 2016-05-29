@@ -17,8 +17,28 @@
     "resources": {
         "media": [
             {
+                "file": "images/warning.png",
+                "name": "IMG_WARNING",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "bitmap"
+            },
+            {
+                "file": "images/no-bt-connection.png",
+                "name": "IMG_NO_BT_CONNECTION",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "bitmap"
+            },
+            {
                 "file": "images/config-required.png",
-                "name": "CONFIG_REQUIRED",
+                "name": "IMG_CONFIG_REQUIRED",
                 "targetPlatforms": null,
                 "type": "bitmap"
             }
