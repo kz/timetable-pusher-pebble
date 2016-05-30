@@ -1,4 +1,9 @@
 /******************************************
+* Libraries
+*******************************************/
+var ajax = require('./lib/ajax');
+
+/******************************************
 * Global Variables
 *******************************************/
 var offsetFromUTC = 0;
@@ -28,7 +33,7 @@ function getTimetables() {
     
 }
 
-function setPins(timetableId, week, day) {
+function sendPins(timetableId, week, day) {
     
 }
 

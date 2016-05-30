@@ -21,15 +21,20 @@ int main(void) {
 
 // -------------------------------------------------------------- //
 
+/*
+* Sends the following types:
+* SEND_PINS
+* Receives the following types:
+* SETUP_REQUIRED, LIST_TIMETABLES, ERROR, SUCCESS
+*/
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     
 }
 
 static void init() {
-    win_no_bt_connection_create();
-//     win_loading_create();
-//     app_message_register_inbox_received(inbox_received_handler);
-//     app_message_open(64, 64);
+    win_loading_create();
+    app_message_register_inbox_received(inbox_received_handler);
+    app_message_open(64, 64);
 }
 
 static void deinit() {
