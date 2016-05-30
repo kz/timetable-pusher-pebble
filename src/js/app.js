@@ -58,7 +58,7 @@ function sendListTimetablesAppMessage() {
         }
         dict.TIMETABLE_NAMES = timetableNames;
     } else { 
-        dict.TIMETABLE_NAMES = 0;
+        dict.TIMETABLE_NAMES = [];
     }
 
     var outgoingDict = {
