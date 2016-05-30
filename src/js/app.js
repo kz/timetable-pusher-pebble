@@ -33,7 +33,7 @@ var dict = {
 *******************************************/
 function sendAppMessage(outgoingDict) {
     Pebble.sendAppMessage(outgoingDict, function() {
-        console.log('Message sent successfully: ' + JSON.stringify(dict));
+        console.log('Message sent successfully: ' + JSON.stringify(outgoingDict));
     }, function(e) {
         console.log('Message failed: ' + JSON.stringify(e));
     });
@@ -48,14 +48,19 @@ function sendSetupRequiredAppMessage() {
 
 function sendListTimetablesAppMessage() {
     dict.TYPE = "LIST_TIMETABLES";
-    
+
     // Populate list of timetable names
-    var timetableNames = [];
-    for (var timetable in timetables) {
-        timetableNames.push(timetable.name);
+    if (timetables.length !== 0) {
+        var timetableNames = [];
+        for (var i in timetables) {
+            var timetable = timetables[i];
+            timetableNames.push(timetable.title);
+        }
+        dict.TIMETABLE_NAMES = timetableNames;
+    } else { 
+        dict.TIMETABLE_NAMES = 0;
     }
-    dict.TIMETABLE_NAMES = timetableNames;
-    
+
     var outgoingDict = {
         'TYPE': dict.TYPE,
         'DAY_OF_WEEK': dict.DAY_OF_WEEK,
@@ -99,9 +104,10 @@ function handleSendPinsAppMessage() {
 * API Functions
 *******************************************/
 function handleAjaxError(error, status, request) {
-    console.log(JSON.stringify(error));
-    console.log(JSON.stringify(status));
-    console.log(JSON.stringify(request));
+    console.log('AJAX error occured:');
+    console.log('Error: ' + JSON.stringify(error));
+    console.log('Status: ' + JSON.stringify(status));
+    console.log('Request: ' + JSON.stringify(request));
 
     if (status === 401) {
         sendSetupRequiredAppMessage();
@@ -174,10 +180,6 @@ function sendPins(timetableId, week, day) {
 }
 
 /******************************************
-* Configuration Functions
-*******************************************/
-
-/******************************************
 * Pebble Events
 *******************************************/
 Pebble.addEventListener('ready', function() {
@@ -208,9 +210,10 @@ Pebble.addEventListener('ready', function() {
 
     // Ensure that the API key is available
     var storedApiKey = localStorage.getItem("apiKey");
+    console.log('Stored API key: ' + storedApiKey);
     if (typeof(storedApiKey) === 'undefined') {
         sendSetupRequiredAppMessage();
-    } else if (storedApiKey === '') {
+    } else if (storedApiKey === '' || storedApiKey === null) {
         sendSetupRequiredAppMessage();
     } else {
         API_KEY = storedApiKey;
@@ -255,12 +258,13 @@ Pebble.addEventListener("webviewclosed", function(e) {
 
     if (typeof(configuration.apiKey) === undefined) {
         sendSetupRequiredAppMessage();
-    } else if(configuration.apiKey === '') {
+    } else if(configuration.apiKey === '' || configuration.apiKey === null) {
         sendSetupRequiredAppMessage();
     } else {
         // Save to localStorage
         API_KEY = configuration.apiKey;
         localStorage.setItem("apiKey", API_KEY);
+        console.log('API key stored in localStorage');
         getTimetables();
     }
 });

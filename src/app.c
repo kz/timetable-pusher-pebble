@@ -6,9 +6,6 @@
 #include "windows/win_no_bt_connection.h"
 #include "windows/win_error.h"
 
-#define API_KEY 0
-#define DAYS_IN_CURRENT_WEEK 1
-
 static void init(void);
 static void deinit(void);
 static void inbox_received_handler(DictionaryIterator *iter, void *context);
