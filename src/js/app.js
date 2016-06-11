@@ -69,8 +69,6 @@ function sendListTimetablesAppMessage() {
     for(var i = 0; i < timetables.length; i++) {
         outgoingDict[BASE_TIMETABLE_KEY + i] = timetables[i].name;
     }
-
-    console.log(outgoingDict);
     
     sendAppMessage(outgoingDict);
 }
@@ -246,7 +244,9 @@ Pebble.addEventListener('ready', function() {
         },
         function (error) {
             console.log('Error getting timeline token: ' + error);
-            sendErrorAppMessage();
+            // TODO: REMOVE
+            // sendErrorAppMessage();
+            // return;
         }
     );
 

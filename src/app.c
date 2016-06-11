@@ -43,25 +43,24 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
             win_error_create();
             return;
         }
+        
         int day_of_week = day_of_week_tuple->value->int32;
         int timetable_count = timetable_count_tuple->value->int32;
 
-        // Loop through the COUNT of timetables
+        // Create an array of timetable names
+        char *timetable_names[timetable_count];
+        
         for(int i = 0; i < timetable_count; i++) {
-            // Each timetable is stored from message key 100 upwards: 100, 102, 103, etc.
             Tuple *timetable_name_tuple = dict_find(iter, BASE_TIMETABLE_KEY + i);
             if(!timetable_name_tuple) {
                 window_stack_pop_all(false);
                 win_error_create();
                 return;
             }
-            
             // Retrieve the name of the timetable
-            
-            
+            char *timetable_name = timetable_name_tuple->value->cstring;
+            strcpy(timetable_names[i], timetable_name);
         }
-
-
 
     } else if (strcmp(type, "SETUP_REQUIRED") == 0) {
         window_stack_pop_all(false);
