@@ -6,27 +6,39 @@ var ajax = require('./lib/ajax');
 /******************************************
 * Global Variables
 *******************************************/
+// API
 var BASE_URL = 'https://timetablepush.me/';
 var API_BASE_URL = BASE_URL + 'api/v1/';
 var CONFIGURATION_URL = BASE_URL + 'app/config';
 var TIMELINE_TOKEN;
 var API_KEY;
 
+// C SDK
+var BASE_TIMETABLE_KEY = 100;
+var TYPE;
+var DAY_OF_WEEK;
+var SELECTED_TIMETABLE;
+var SELECTED_WEEK;
+var SELECTED_DAY;
+
+// Data
 var offsetFromUTC = 0;
 var timetables = [];
 
 /*
+* Possible AppMessage keys:
+* 'TYPE': '',
+* 'DAY_OF_WEEK': 0,
+* 'SELECTED_TIMETABLE': 0,
+* 'SELECTED_WEEK': 0,
+* 'SELECTED_DAY': 0,
+* 'TIMETABLE_COUNT': 0
+* BASE_TIMETABLE_KEY + n : ''
+*
 * SELECTED_WEEK = 0 is for current week; SELECTED_WEEK = 1 is for next week
 * SELECTED_DAY = 7 means that pins are being pushed to the whole week
 */
-var dict = {
-    'TYPE': '',
-    'DAY_OF_WEEK': 0,
-    'TIMETABLE_NAMES': '',
-    'SELECTED_TIMETABLE': 0,
-    'SELECTED_WEEK': 0,
-    'SELECTED_DAY': 0
-};
+
 
 /******************************************
 * App Message Functions
@@ -47,24 +59,25 @@ function sendSetupRequiredAppMessage() {
 }
 
 function sendListTimetablesAppMessage() {
-    dict.TYPE = "LIST_TIMETABLES";
-
+    var outgoingDict = {
+        'TYPE': 'LIST_TIMETABLES',
+        'DAY_OF_WEEK': DAY_OF_WEEK,
+        'TIMETABLE_COUNT': timetables.length,
+    };
+    
     // Populate list of timetable names
-    if (timetables.length !== 0) {
-        var timetableNames = [];
-        for (var i in timetables) {
-            var timetable = timetables[i];
-            timetableNames.push(timetable.title);
-        }
-        dict.TIMETABLE_NAMES = timetableNames;
-    } else { 
-        dict.TIMETABLE_NAMES = [];
+    for(var i = 0; i < timetables.length; i++) {
+        outgoingDict[BASE_TIMETABLE_KEY + i] = timetables[i].name;
     }
 
+    console.log(outgoingDict);
+    
+    sendAppMessage(outgoingDict);
+}
+
+function sendLoadingAppMessage() {
     var outgoingDict = {
-        'TYPE': dict.TYPE,
-        'DAY_OF_WEEK': dict.DAY_OF_WEEK,
-        'TIMETABLE_NAMES': dict.TIMETABLE_NAMES
+        'TYPE': 'LOADING',
     };
     sendAppMessage(outgoingDict);
 }
@@ -85,19 +98,23 @@ function sendSuccessAppMessage() {
 
 function handleSendPinsAppMessage() {
     // Validation
-    if (typeof timetables[dict.SELECTED_TIMETABLE] === 'undefined' ||
-        (dict.SELECTED_WEEK !== 0 && dict.SELECTED_WEEK !== 1) || 
-        dict.SELECTED_DAY < 0 || dict.SELECTED_DAY > 7) {
+    if (typeof timetables[SELECTED_TIMETABLE] === 'undefined' ||
+        (SELECTED_WEEK !== 0 && SELECTED_WEEK !== 1) || 
+        SELECTED_DAY < 0 || SELECTED_DAY > 7) {
         sendErrorAppMessage();
     }
 
-    var selectedTimetableId = timetables[dict.SELECTED_TIMETABLE].id;
-    var selectedWeek = dict.SELECTED_WEEK === 0 ? 'current' : 'next';
-    var selectedDay = dict.SELECTED_DAY < 7 ? dict.SELECTED_DAY : null;
+    var selectedTimetableId = timetables[SELECTED_TIMETABLE].id;
+    var selectedWeek = SELECTED_WEEK === 0 ? 'current' : 'next';
+    var selectedDay = SELECTED_DAY < 7 ? SELECTED_DAY : null;
 
-    sendPins(selectedTimetableId,
-             selectedWeek,
-             selectedDay);
+    sendPinsCreate(selectedTimetableId,
+                   selectedWeek,
+                   selectedDay);
+}
+
+function handleDeletePinsAppMessage() {
+    sendPinsDelete();
 }
 
 /******************************************
@@ -131,7 +148,7 @@ function getTimetables() {
                 data.forEach(function(timetable) {
                     timetables.push({
                         id: timetable.id,
-                        title: timetable.name
+                        name: timetable.name
                     });
                 });
                 sendListTimetablesAppMessage();
@@ -145,7 +162,7 @@ function getTimetables() {
     );
 }
 
-function sendPins(timetableId, week, day) {
+function sendPinsCreate(timetableId, week, day) {
     var data = {
         timetable_id: timetableId,
         timeline_token: TIMELINE_TOKEN,
@@ -179,6 +196,31 @@ function sendPins(timetableId, week, day) {
     );
 }
 
+function sendPinsDelete() {
+    ajax(
+        {
+            url: API_BASE_URL + 'job',
+            method: 'DELETE',
+            headers: {
+                Authorization: 'Bearer: ' + API_KEY
+            },
+            data: {
+                timeline_token: TIMELINE_TOKEN
+            }
+        },
+        function (data, status, request) {
+            if (status === 200) {
+                sendSuccessAppMessage();
+            } else {
+                handleAjaxError(data, status, request);
+            }
+        },
+        function (error, status, request) {
+            handleAjaxError(error, status, request);
+        }
+    );
+}
+
 /******************************************
 * Pebble Events
 *******************************************/
@@ -193,8 +235,8 @@ Pebble.addEventListener('ready', function() {
     // Get the day of the week
     var d = new Date();
     var dayOfWeek = d.getDay() === 0 ? 6 : d.getDay() - 1;
-    dict.DAY_OF_WEEK = dayOfWeek;
-    console.log('Day of week (0-6): ' + dayOfWeek);
+    DAY_OF_WEEK = dayOfWeek;
+    console.log('Day of week (0-6): ' + DAY_OF_WEEK);
 
     // Get timeline token
     Pebble.getTimelineToken(
@@ -228,23 +270,27 @@ Pebble.addEventListener('appmessage', function(e) {
 
     if(!receivedDict.TYPE) {
         sendErrorAppMessage();
-    } else {
-        dict.TYPE = String(receivedDict.TYPE);
-        if (receivedDict.SELECTED_TIMETABLE) {
-            dict.SELECTED_TIMETABLE = Number(receivedDict.SELECTED_TIMETABLE);
-        }
-        if (receivedDict.SELECTED_WEEK) {
-            dict.SELECTED_WEEK = Number(receivedDict.SELECTED_WEEK);
-        }
-        if (receivedDict.SELECTED_DAY) {
-            dict.SELECTED_DAY = Number(receivedDict.SELECTED_DAY);
-        }
+        return;
     }
 
-    if (dict.TYPE === 'SEND_PINS') {
+    TYPE = String(receivedDict.TYPE);
+    
+    if (TYPE === 'SEND_PINS') {
+        if (receivedDict.SELECTED_TIMETABLE) {
+            SELECTED_TIMETABLE = Number(receivedDict.SELECTED_TIMETABLE);
+        }
+        if (receivedDict.SELECTED_WEEK) {
+            SELECTED_WEEK = Number(receivedDict.SELECTED_WEEK);
+        }
+        if (receivedDict.SELECTED_DAY) {
+            SELECTED_DAY = Number(receivedDict.SELECTED_DAY);
+        }
         handleSendPinsAppMessage();
+    } else if (TYPE === 'DELETE_PINS') {
+        handleDeletePinsAppMessage();
     } else {
         sendErrorAppMessage();
+        return;
     }
 });
 
@@ -265,6 +311,7 @@ Pebble.addEventListener("webviewclosed", function(e) {
         API_KEY = configuration.apiKey;
         localStorage.setItem("apiKey", API_KEY);
         console.log('API key stored in localStorage');
+        sendLoadingAppMessage();
         getTimetables();
     }
 });
