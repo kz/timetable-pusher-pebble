@@ -4,7 +4,9 @@
 
 #define NUM_MENU_SECTIONS 2
 #define NUM_FIRST_SECTION_ITEMS 1
-#define NUM_SECOND_SECTION_ITEMS 1
+#define NUM_ADVANCED_SECTION_ITEMS 1
+
+extern int day_of_week;
 
 static Window *s_main_window;
 static MenuLayer *s_menu_layer;
@@ -20,7 +22,7 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
 
 static bool has_timetables;
 
-void win_main_create(void) {
+void win_main_create(int count, char *timetable_names[]) {
     s_main_window = window_create();
     window_set_window_handlers(s_main_window, (WindowHandlers) {
         .load = window_load,
@@ -28,7 +30,12 @@ void win_main_create(void) {
     });
     window_stack_push(s_main_window, true);
 
-    has_timetables = false;
+    if (count > 0) {
+        has_timetables = true;
+    } else {
+        has_timetables = false;
+    }
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "%d", day_of_week);
 }
 
 void win_main_destroy(void) {
@@ -69,7 +76,7 @@ static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t secti
         case 0:
         return NUM_FIRST_SECTION_ITEMS;
         case 1:
-        return NUM_SECOND_SECTION_ITEMS;
+        return NUM_ADVANCED_SECTION_ITEMS;
         default:
         return 0;
     }
