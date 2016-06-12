@@ -64,10 +64,11 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
             }
             // Retrieve the name of the timetable
             char *timetable_name = timetable_name_tuple->value->cstring;
-            strcpy(timetable_names[i], timetable_name);
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "%s%s", "Retrieved timetable name: ", timetable_name);
+            timetable_names[i] = timetable_name;
+            // APP_LOG(APP_LOG_LEVEL_DEBUG, "%s%s", "Retrieved timetable name: ", timetable_name);
         }
         
+        window_stack_pop_all(true);
         win_main_create(timetable_count, timetable_names);
 
     } else if (strcmp(type, "SETUP_REQUIRED") == 0) {

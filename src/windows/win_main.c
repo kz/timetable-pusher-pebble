@@ -3,7 +3,7 @@
 #include "win_tutorial.h"
 
 #define NUM_MENU_SECTIONS 2
-#define NUM_FIRST_SECTION_ITEMS 1
+#define NUM_TIMETABLE_SECTION_ITEMS 1
 #define NUM_ADVANCED_SECTION_ITEMS 1
 
 extern int day_of_week;
@@ -21,24 +21,31 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data);
 
 static bool has_timetables;
+static int TIMETABLE_COUNT;
+static char **TIMETABLE_NAMES;
 
 void win_main_create(int count, char *timetable_names[]) {
+    if (count > 0) {
+        has_timetables = true;
+    } else {
+        has_timetables = false;
+    }
+    TIMETABLE_COUNT = count;
+    TIMETABLE_NAMES = malloc(count * sizeof(char *));
+    for (int i = 0; i < count; i++) {
+        TIMETABLE_NAMES[i] = timetable_names[i];
+    }
+    
     s_main_window = window_create();
     window_set_window_handlers(s_main_window, (WindowHandlers) {
         .load = window_load,
         .unload = window_unload,
     });
     window_stack_push(s_main_window, true);
-
-    if (count > 0) {
-        has_timetables = true;
-    } else {
-        has_timetables = false;
-    }
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "%d", day_of_week);
 }
 
 void win_main_destroy(void) {
+    free(TIMETABLE_NAMES);
     window_destroy(s_main_window);
 }
 
@@ -74,7 +81,11 @@ static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data
 static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
     switch (section_index) {
         case 0:
-        return NUM_FIRST_SECTION_ITEMS;
+        if(has_timetables) {
+            return TIMETABLE_COUNT;
+        } else {
+            return NUM_TIMETABLE_SECTION_ITEMS;
+        }
         case 1:
         return NUM_ADVANCED_SECTION_ITEMS;
         default:
@@ -100,10 +111,10 @@ static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, ui
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
     switch (cell_index->section) {
         case 0:
-        switch (cell_index->row) {
-            case 0:
+        if(!has_timetables && cell_index->row == 0) {
             menu_cell_basic_draw(ctx, cell_layer, "Create one now!", NULL, NULL);
-            break;
+        } else {
+            menu_cell_basic_draw(ctx, cell_layer, TIMETABLE_NAMES[cell_index->row], NULL, NULL);
         }
         break;
         case 1:
@@ -123,7 +134,7 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
             win_tutorial_create();
         }
         break;
-        
+
         case 1:
         switch (cell_index->row) {
             case 0:
