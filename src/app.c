@@ -9,6 +9,12 @@
 #define BASE_TIMETABLE_KEY 100
 
 int day_of_week;
+int selected_timetable;
+// selected_week
+// 0 = current
+// 1 = next
+int selected_week;
+int selected_day;
 
 static void init(void);
 static void deinit(void);
@@ -74,7 +80,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     } else if (strcmp(type, "SETUP_REQUIRED") == 0) {
         window_stack_pop_all(false);
         win_setup_create();
-    } else if (strcmp(type, "LOADING") == 0) {    
+    } else if (strcmp(type, "LOADING") == 0) {
         window_stack_pop_all(false);
         win_loading_create();
     } else if (strcmp(type, "SUCCESS") == 0) {
