@@ -5,7 +5,7 @@
     },
     {
         "type": "text",
-        "defaultValue": "Create your timetable(s) by signing up at <a href=\"https://timetablepush.me/\">timetablepush.me</a> (desktop recommended) and paste your API token from the website below."
+        "defaultValue": "Create your timetable(s) by signing up at <a href=\"https://timetablepush.me/\" target=\"_blank\">timetablepush.me</a> (desktop recommended) and paste your API token from the website below."
     },
     {
         "type": "section",
