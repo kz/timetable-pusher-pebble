@@ -7,8 +7,6 @@
 #define NUM_TIMETABLE_SECTION_ITEMS 1
 #define NUM_ADVANCED_SECTION_ITEMS 1
 
-extern int selected_timetable;
-
 static Window *s_main_window;
 static MenuLayer *s_menu_layer;
 
@@ -135,8 +133,8 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
         if (!has_timetables) {
             win_tutorial_create();
         } else {
-            selected_timetable = cell_index->row;
-            win_menu_week_create();
+            int selected_timetable = cell_index->row;
+            win_menu_week_create(selected_timetable);
         }
         break;
 

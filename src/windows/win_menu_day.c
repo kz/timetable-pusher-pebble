@@ -1,11 +1,13 @@
 #include <pebble.h>
-#include "windows/win_menu_week.h"
 #include "windows/win_menu_day.h"
+#include "app.h"
 
-#define NUM_MENU_SECTIONS 1
-#define NUM_MENU_SECTION_ITEMS 2
+#define NUM_MENU_SECTIONS 2
+#define NUM_WHOLE_WEEK_SECTION_ITEMS 1
 
-static Window *s_menu_week_window;
+extern int DAY_OF_WEEK;
+
+static Window *s_menu_day_window;
 static MenuLayer *s_menu_layer;
 
 static void window_load(Window* window);
@@ -18,25 +20,35 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data);
 static void menu_cell_round_compatible_header_draw(GContext* ctx, const Layer *cell_layer, const char *title);
 
+static const char *DAY_NAMES[7];
 static int SELECTED_TIMETABLE;
+static int SELECTED_WEEK;
 
-void win_menu_week_create(int selected_timetable) {
+void win_menu_day_create(int selected_timetable, int selected_week) {
     SELECTED_TIMETABLE = selected_timetable;
-    
-    s_menu_week_window = window_create();
-    window_set_window_handlers(s_menu_week_window, (WindowHandlers) {
+    SELECTED_WEEK = selected_week;
+    DAY_NAMES[0] = "Monday";
+    DAY_NAMES[1] = "Tuesday";
+    DAY_NAMES[2] = "Wednesday";
+    DAY_NAMES[3] = "Thursday";
+    DAY_NAMES[4] = "Friday";
+    DAY_NAMES[5] = "Saturday";
+    DAY_NAMES[6] = "Sunday";
+
+    s_menu_day_window = window_create();
+    window_set_window_handlers(s_menu_day_window, (WindowHandlers) {
         .load = window_load,
         .unload = window_unload,
     });
-    window_stack_push(s_menu_week_window, true);
+    window_stack_push(s_menu_day_window, true);
 }
 
-void win_menu_week_destroy(void) {
-    window_destroy(s_menu_week_window);
+void win_menu_day_destroy(void) {
+    window_destroy(s_menu_day_window);
 }
 
-Window* get_menu_week_window(void) {
-    return s_menu_week_window;
+Window* get_menu_day_window(void) {
+    return s_menu_day_window;
 }
 
 // -------------------------------------------------------------- //
@@ -65,7 +77,22 @@ static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data
 }
 
 static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
-    return NUM_MENU_SECTION_ITEMS;
+    switch (section_index) {
+        case 0:
+        return NUM_WHOLE_WEEK_SECTION_ITEMS;
+        break;
+
+        case 1:
+        if (SELECTED_WEEK == 0) {
+            return 7 - DAY_OF_WEEK;
+        } else {
+            return 7;
+        }
+        break;
+
+        default:
+        return 0;
+    }
 }
 
 static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
@@ -73,24 +100,53 @@ static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t s
 }
 
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
-    menu_cell_round_compatible_header_draw(ctx, cell_layer, "Add entries to:");
+    switch (section_index) {
+        case 0:
+        menu_cell_round_compatible_header_draw(ctx, cell_layer, "Push pins for:");
+        break;
+
+        case 1:
+        menu_cell_round_compatible_header_draw(ctx, cell_layer, "Specific day:");
+        break;
+    }
 }
 
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
-    switch (cell_index->row) {
+    switch (cell_index->section) {
         case 0:
-        menu_cell_basic_draw(ctx, cell_layer, "This week", NULL, NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "Whole week", NULL, NULL);
         break;
-        
+
         case 1:
-        menu_cell_basic_draw(ctx, cell_layer, "Next week", NULL, NULL);
+        if (SELECTED_WEEK == 0) {
+            menu_cell_basic_draw(ctx, cell_layer, DAY_NAMES[DAY_OF_WEEK + cell_index->row], NULL, NULL);
+        } else {
+            menu_cell_basic_draw(ctx, cell_layer, DAY_NAMES[cell_index->row], NULL, NULL);
+        }
         break;
     }
 }
 
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
-    int selected_week = cell_index->row;
-    win_menu_day_create(SELECTED_TIMETABLE, selected_week);
+    int selected_day;
+    switch (cell_index->section) {
+        case 0:
+        selected_day = 7;
+        break;
+
+        case 1:
+        if (SELECTED_WEEK == 0) {
+            selected_day = DAY_OF_WEEK + cell_index->row;
+        } else {
+            selected_day = cell_index->row;
+        }
+        break;
+
+        default:
+        selected_day = 7;
+    }
+
+    push_pins(SELECTED_TIMETABLE, SELECTED_WEEK, selected_day);
 }
 
 static void window_load(Window *window) {  

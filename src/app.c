@@ -8,13 +8,7 @@
 
 #define BASE_TIMETABLE_KEY 100
 
-int day_of_week;
-int selected_timetable;
-// selected_week
-// 0 = current
-// 1 = next
-int selected_week;
-int selected_day;
+int DAY_OF_WEEK;
 
 static void init(void);
 static void deinit(void);
@@ -24,6 +18,14 @@ int main(void) {
     init();
     app_event_loop();
     deinit();
+}
+
+void push_pins(int selected_timetable, int selected_week, int selected_day) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Day of week: %d - Timetable: %d - Week: %d - Day: %d", DAY_OF_WEEK, selected_timetable, selected_week, selected_day);
+}
+
+void delete_pins(void) {
+    
 }
 
 // -------------------------------------------------------------- //
@@ -53,7 +55,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
             return;
         }
         
-        day_of_week = day_of_week_tuple->value->int32;
+        DAY_OF_WEEK = day_of_week_tuple->value->int32;
         int timetable_count = timetable_count_tuple->value->int32;
 
         // Create an array of timetable names
