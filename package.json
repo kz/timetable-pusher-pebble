@@ -1,0 +1,66 @@
+{
+    "author": "ThePurpleK",
+    "dependencies": {
+        "pebble-clay": "^1.0.2"
+    },
+    "keywords": [],
+    "name": "timetable-pusher",
+    "pebble": {
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "Timetable Pusher",
+        "enableMultiJS": true,
+        "messageKeys": [
+            "TYPE",
+            "DAY_OF_WEEK",
+            "SELECTED_TIMETABLE",
+            "SELECTED_WEEK",
+            "SELECTED_DAY",
+            "TIMETABLE_COUNT",
+            "API_KEY"
+        ],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/warning.png",
+                    "name": "IMG_WARNING",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/no-bt-connection.png",
+                    "name": "IMG_NO_BT_CONNECTION",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/config-required.png",
+                    "name": "IMG_CONFIG_REQUIRED",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk"
+        ],
+        "uuid": "6bc72354-bdef-4fa6-baff-d6d5913dbf38",
+        "watchapp": {
+            "watchface": false
+        }
+    },
+    "version": "2.0.0"
+}

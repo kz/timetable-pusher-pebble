@@ -1,0 +1,30 @@
+[
+    {
+        "type": "heading",
+        "defaultValue": "Timetable Pusher Configuration"
+    },
+    {
+        "type": "text",
+        "defaultValue": "Create your timetable(s) by signing up at <a href=\"https://timetablepush.me/\" target=\"_blank\">timetablepush.me</a> (desktop recommended) and paste your API token from the website below."
+    },
+    {
+        "type": "section",
+        "items": [
+            {
+                "type": "input",
+                "messageKey": "API_KEY",
+                "defaultValue": "",
+                "label": "API Key",
+                "attributes": {
+                    "placeholder": "API Key",
+                    "limit": 20,
+                    "type": "text"
+                }
+            }
+        ]
+    },
+    {
+        "type": "submit",
+        "defaultValue": "Save API Key"
+    }
+]
