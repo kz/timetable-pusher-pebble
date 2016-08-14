@@ -142,6 +142,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
             timetable_names[i] = timetable_name;
         }
 
+        win_main_destroy();
         window_stack_pop_all(true);
         win_main_create(timetable_count, timetable_names);
 

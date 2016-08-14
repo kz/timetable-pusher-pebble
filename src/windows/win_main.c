@@ -34,9 +34,9 @@ void win_main_create(int count, char *timetable_names[]) {
     TIMETABLE_COUNT = count;
     TIMETABLE_NAMES = malloc(count * sizeof(char *));
     for (int i = 0; i < count; i++) {
-        int str_length = strlen(timetable_names[i]);
+        int str_length = strlen(timetable_names[i]) + 1;
         char* buffer = (char*) malloc(str_length);
-        buffer = strncpy(buffer, timetable_names[i], str_length);
+        strncpy(buffer, timetable_names[i], str_length);
         TIMETABLE_NAMES[i] = buffer;
     }
 
