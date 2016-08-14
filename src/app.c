@@ -166,7 +166,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 static void init() {
     win_loading_create();
     app_message_register_inbox_received(inbox_received_handler);
-    app_message_open(128, 128);
+    app_message_open(app_message_inbox_size_maximum(), 128);
 }
 
 static void deinit() {

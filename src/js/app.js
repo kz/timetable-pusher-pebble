@@ -27,6 +27,7 @@ var SELECTED_WEEK;
 var SELECTED_DAY;
 
 // Data
+var TRUNCATE_LENGTH = 16;
 var offsetFromUTC = 0;
 var timetables = [];
 
@@ -147,11 +148,12 @@ function getTimetables() {
             }
         },
         function (data, status, request) {
+            timetables = [];
             if (status === 200) {
                 data.forEach(function(timetable) {
                     timetables.push({
                         id: timetable.id,
-                        name: timetable.name
+                        name: timetable.name.substring(0, TRUNCATE_LENGTH)
                     });
                 });
                 sendListTimetablesAppMessage();
