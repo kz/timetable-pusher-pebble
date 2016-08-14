@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "app.h"
 #include "win_main.h"
 #include "win_tutorial.h"
 #include "win_menu_week.h"
@@ -33,7 +34,10 @@ void win_main_create(int count, char *timetable_names[]) {
     TIMETABLE_COUNT = count;
     TIMETABLE_NAMES = malloc(count * sizeof(char *));
     for (int i = 0; i < count; i++) {
-        TIMETABLE_NAMES[i] = timetable_names[i];
+        int str_length = strlen(timetable_names[i]);
+        char* buffer = (char*) malloc(str_length);
+        buffer = strncpy(buffer, timetable_names[i], str_length);
+        TIMETABLE_NAMES[i] = buffer;
     }
 
     s_main_window = window_create();
@@ -142,6 +146,7 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
         switch (cell_index->row) {
             case 0:
             // Delete all pins selected
+            delete_pins();
             break;
         }
         break;

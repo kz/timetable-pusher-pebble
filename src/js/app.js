@@ -64,12 +64,12 @@ function sendListTimetablesAppMessage() {
         'DAY_OF_WEEK': DAY_OF_WEEK,
         'TIMETABLE_COUNT': timetables.length,
     };
-    
+
     // Populate list of timetable names
     for(var i = 0; i < timetables.length; i++) {
         outgoingDict[BASE_TIMETABLE_KEY + i] = timetables[i].name;
     }
-    
+
     sendAppMessage(outgoingDict);
 }
 
@@ -168,7 +168,7 @@ function sendPinsCreate(timetableId, week, day) {
         week: week
     };
 
-    if (day !== null) {
+    if (typeof(day) !== 'undefined' && day !== null) {
         data.day = day;
     }
 
@@ -237,30 +237,26 @@ Pebble.addEventListener('ready', function() {
     console.log('Day of week (0-6): ' + DAY_OF_WEEK);
 
     // Get timeline token
-    Pebble.getTimelineToken(
-        function (token) {
-            TIMELINE_TOKEN = token;
-            console.log('Got timeline token: ' + TIMELINE_TOKEN);
-        },
-        function (error) {
-            console.log('Error getting timeline token: ' + error);
-            // TODO: REMOVE
-            // sendErrorAppMessage();
-            // return;
-        }
-    );
+    Pebble.getTimelineToken(function (token) {
+        TIMELINE_TOKEN = token;
+        console.log('Got timeline token: ' + TIMELINE_TOKEN);
 
-    // Ensure that the API key is available
-    var storedApiKey = localStorage.getItem("apiKey");
-    console.log('Stored API key: ' + storedApiKey);
-    if (typeof(storedApiKey) === 'undefined') {
-        sendSetupRequiredAppMessage();
-    } else if (storedApiKey === '' || storedApiKey === null) {
-        sendSetupRequiredAppMessage();
-    } else {
-        API_KEY = storedApiKey;
-        getTimetables();
-    }
+        // Ensure that the API key is available
+        var storedApiKey = localStorage.getItem("apiKey");
+        console.log('Stored API key: ' + storedApiKey);
+        if (typeof(storedApiKey) === 'undefined') {
+            sendSetupRequiredAppMessage();
+        } else if (storedApiKey === '' || storedApiKey === null) {
+            sendSetupRequiredAppMessage();
+        } else {
+            API_KEY = storedApiKey;
+            getTimetables();
+        }
+    }, function (error) {
+        console.log('Error getting timeline token: ' + error);
+        sendErrorAppMessage();
+        return;
+    });
 });
 
 Pebble.addEventListener('appmessage', function(e) {
@@ -274,15 +270,15 @@ Pebble.addEventListener('appmessage', function(e) {
     }
 
     TYPE = String(receivedDict.TYPE);
-    
+
     if (TYPE === 'SEND_PINS') {
-        if (receivedDict.SELECTED_TIMETABLE) {
+        if (typeof(receivedDict.SELECTED_TIMETABLE) !== 'undefined') {
             SELECTED_TIMETABLE = Number(receivedDict.SELECTED_TIMETABLE);
         }
-        if (receivedDict.SELECTED_WEEK) {
+        if (typeof(receivedDict.SELECTED_WEEK) !== 'undefined') {
             SELECTED_WEEK = Number(receivedDict.SELECTED_WEEK);
         }
-        if (receivedDict.SELECTED_DAY) {
+        if (typeof(receivedDict.SELECTED_DAY) !== 'undefined') {
             SELECTED_DAY = Number(receivedDict.SELECTED_DAY);
         }
         handleSendPinsAppMessage();
