@@ -1,6 +1,8 @@
 {
     "author": "pebble@iamkelv.in",
-    "dependencies": {},
+    "dependencies": {
+        "pebble-clay": "^1.0.2"
+    },
     "keywords": [],
     "name": "timetable-pusher",
     "pebble": {
@@ -15,7 +17,8 @@
             "SELECTED_TIMETABLE",
             "SELECTED_WEEK",
             "SELECTED_DAY",
-            "TIMETABLE_COUNT"
+            "TIMETABLE_COUNT",
+            "API_KEY"
         ],
         "projectType": "native",
         "resources": {

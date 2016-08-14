@@ -2,6 +2,12 @@
 * Libraries
 *******************************************/
 var ajax = require('./lib/ajax');
+var keys = require('message_keys');
+
+// Pebble Clay
+var Clay = require('pebble-clay');
+var clayConfig = require('./config.json');
+var clay = new Clay(clayConfig, null, { autoHandleEvents: false });
 
 /******************************************
 * Global Variables
@@ -9,7 +15,6 @@ var ajax = require('./lib/ajax');
 // API
 var BASE_URL = 'https://timetablepush.me/';
 var API_BASE_URL = BASE_URL + 'api/v1/';
-var CONFIGURATION_URL = BASE_URL + 'app/config';
 var TIMELINE_TOKEN;
 var API_KEY;
 
@@ -290,12 +295,17 @@ Pebble.addEventListener('appmessage', function(e) {
     }
 });
 
-Pebble.addEventListener("showConfiguration", function(e) {
-    Pebble.openURL(CONFIGURATION_URL);
+Pebble.addEventListener('showConfiguration', function(e) {
+    Pebble.openURL(clay.generateUrl());
 });
 
-Pebble.addEventListener("webviewclosed", function(e) {
-    var configuration = JSON.parse(decodeURIComponent(e.response));
+Pebble.addEventListener('webviewclosed', function(e) {
+    if (e && !e.response) {
+        return;
+    }
+
+    // Get the keys and values from each config item
+    var configuration = clay.getSettings(e.response);
     console.log("Configuration window returned: " + JSON.stringify(configuration));
 
     if (typeof(configuration.apiKey) === undefined) {
@@ -304,7 +314,7 @@ Pebble.addEventListener("webviewclosed", function(e) {
         sendSetupRequiredAppMessage();
     } else {
         // Save to localStorage
-        API_KEY = configuration.apiKey;
+        API_KEY = configuration[keys.API_KEY];
         localStorage.setItem("apiKey", API_KEY);
         console.log('API key stored in localStorage');
         sendLoadingAppMessage();
