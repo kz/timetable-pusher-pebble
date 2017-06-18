@@ -1,8 +1,8 @@
 # Timetable Pusher for Pebble (Watchapp)
 
-######For the listing on the Pebble appstore, click [here](https://apps.getpebble.com/applications/562a89497480835e51000090).
+###### For the listing on the Pebble appstore, click [here](https://apps.getpebble.com/applications/562a89497480835e51000090).
 
-######For the Laravel application which provides the backend to this watchapp, click [here](https://github.com/kz/timetable-pusher-backend).
+###### For the Laravel application which provides the backend to this watchapp, click [here](https://github.com/kz/timetable-pusher-backend).
 
 Timetable Pusher is allows users to create Pebble timeline pins from their class timetable(s) and push these pins to their Pebble watch. The platform consists of a Pebble app and a PHP/Laravel web application.
 
