@@ -6,7 +6,7 @@
 
 Timetable Pusher is allows users to create Pebble timeline pins from their class timetable(s) and push these pins to their Pebble watch. The platform consists of a Pebble app and a PHP/Laravel web application.
 
-The watchapp is written in PebbleJS and is responsible for retrieving the timetables from the backend and requesting for pins to be created.
+The watchapp is written in C with Pebble's C SDK and is responsible for retrieving the timetables from the backend and requesting for pins to be created.
 
 ## Installation
 
