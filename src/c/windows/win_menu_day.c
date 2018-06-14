@@ -1,6 +1,6 @@
 #include <pebble.h>
-#include "windows/win_menu_day.h"
-#include "app.h"
+#include "win_menu_day.h"
+#include "../app.h"
 
 #define NUM_MENU_SECTIONS 2
 #define NUM_WHOLE_WEEK_SECTION_ITEMS 1

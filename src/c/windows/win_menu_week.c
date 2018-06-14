@@ -1,14 +1,11 @@
 #include <pebble.h>
-#include "app.h"
-#include "win_main.h"
-#include "win_tutorial.h"
 #include "win_menu_week.h"
+#include "win_menu_day.h"
 
-#define NUM_MENU_SECTIONS 2
-#define NUM_TIMETABLE_SECTION_ITEMS 1
-#define NUM_ADVANCED_SECTION_ITEMS 1
+#define NUM_MENU_SECTIONS 1
+#define NUM_MENU_SECTION_ITEMS 2
 
-static Window *s_main_window;
+static Window *s_menu_week_window;
 static MenuLayer *s_menu_layer;
 
 static void window_load(Window* window);
@@ -19,47 +16,32 @@ static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t s
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data);
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data);
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data);
-void menu_cell_round_compatible_header_draw(GContext* ctx, const Layer *cell_layer, const char *title);
+static void menu_cell_round_compatible_header_draw(GContext* ctx, const Layer *cell_layer, const char *title);
 
-static bool has_timetables;
-static int TIMETABLE_COUNT;
-static char **TIMETABLE_NAMES;
+static int SELECTED_TIMETABLE;
 
-void win_main_create(int count, char *timetable_names[]) {
-    if (count > 0) {
-        has_timetables = true;
-    } else {
-        has_timetables = false;
-    }
-    TIMETABLE_COUNT = count;
-    TIMETABLE_NAMES = malloc(count * sizeof(char *));
-    for (int i = 0; i < count; i++) {
-        int str_length = strlen(timetable_names[i]) + 1;
-        char* buffer = (char*) malloc(str_length);
-        strncpy(buffer, timetable_names[i], str_length);
-        TIMETABLE_NAMES[i] = buffer;
-    }
-
-    s_main_window = window_create();
-    window_set_window_handlers(s_main_window, (WindowHandlers) {
+void win_menu_week_create(int selected_timetable) {
+    SELECTED_TIMETABLE = selected_timetable;
+    
+    s_menu_week_window = window_create();
+    window_set_window_handlers(s_menu_week_window, (WindowHandlers) {
         .load = window_load,
         .unload = window_unload,
     });
-    window_stack_push(s_main_window, true);
+    window_stack_push(s_menu_week_window, true);
 }
 
-void win_main_destroy(void) {
-    free(TIMETABLE_NAMES);
-    window_destroy(s_main_window);
+void win_menu_week_destroy(void) {
+    window_destroy(s_menu_week_window);
 }
 
-Window* get_main_window(void) {
-    return s_main_window;
+Window* get_menu_week_window(void) {
+    return s_menu_week_window;
 }
 
 // -------------------------------------------------------------- //
 
-void menu_cell_round_compatible_header_draw(GContext* ctx, const Layer *cell_layer, const char *title) {
+static void menu_cell_round_compatible_header_draw(GContext* ctx, const Layer *cell_layer, const char *title) {
     graphics_context_set_text_color(ctx, GColorBlack);
     graphics_context_set_fill_color(ctx, GColorWhite);
 
@@ -83,18 +65,7 @@ static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data
 }
 
 static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
-    switch (section_index) {
-        case 0:
-        if(has_timetables) {
-            return TIMETABLE_COUNT;
-        } else {
-            return NUM_TIMETABLE_SECTION_ITEMS;
-        }
-        case 1:
-        return NUM_ADVANCED_SECTION_ITEMS;
-        default:
-        return 0;
-    }
+    return NUM_MENU_SECTION_ITEMS;
 }
 
 static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
@@ -102,55 +73,24 @@ static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t s
 }
 
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
-    switch (section_index) {
-        case 0:
-        menu_cell_round_compatible_header_draw(ctx, cell_layer, "Select Timetable");
-        break;
-        case 1:
-        menu_cell_round_compatible_header_draw(ctx, cell_layer, "Advanced");
-        break;
-    }
+    menu_cell_round_compatible_header_draw(ctx, cell_layer, "Add entries to:");
 }
 
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
-    switch (cell_index->section) {
+    switch (cell_index->row) {
         case 0:
-        if(!has_timetables && cell_index->row == 0) {
-            menu_cell_basic_draw(ctx, cell_layer, "Create one now!", NULL, NULL);
-        } else {
-            menu_cell_basic_draw(ctx, cell_layer, TIMETABLE_NAMES[cell_index->row], NULL, NULL);
-        }
+        menu_cell_basic_draw(ctx, cell_layer, "This week", NULL, NULL);
         break;
+        
         case 1:
-        switch (cell_index->row) {
-            case 0:
-            menu_cell_basic_draw(ctx, cell_layer, "Delete all pins", NULL, NULL);
-            break;
-        }
+        menu_cell_basic_draw(ctx, cell_layer, "Next week", NULL, NULL);
         break;
     }
 }
 
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
-    switch (cell_index->section) {
-        case 0:
-        if (!has_timetables) {
-            win_tutorial_create();
-        } else {
-            int selected_timetable = cell_index->row;
-            win_menu_week_create(selected_timetable);
-        }
-        break;
-
-        case 1:
-        switch (cell_index->row) {
-            case 0:
-            // Delete all pins selected
-            delete_pins();
-            break;
-        }
-        break;
-    }
+    int selected_week = cell_index->row;
+    win_menu_day_create(SELECTED_TIMETABLE, selected_week);
 }
 
 static void window_load(Window *window) {  
