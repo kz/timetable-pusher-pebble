@@ -3,8 +3,15 @@
 #include "win_main.h"
 #include "win_tutorial.h"
 #include "win_menu_week.h"
+#include "win_rebble.h"
 
-#define NUM_MENU_SECTIONS 2
+#define NUM_MENU_SECTIONS 3
+
+#define REBBLE_SECTION_INDEX 0
+#define TIMETABLE_SECTION_INDEX 1
+#define ADVANCED_SECTION_INDEX 2
+
+#define NUM_REBBLE_SECTION_ITEMS 1
 #define NUM_TIMETABLE_SECTION_ITEMS 1
 #define NUM_ADVANCED_SECTION_ITEMS 1
 
@@ -84,16 +91,21 @@ static uint16_t menu_get_num_sections_callback(MenuLayer *menu_layer, void *data
 
 static uint16_t menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data) {
     switch (section_index) {
-        case 0:
-        if(has_timetables) {
-            return TIMETABLE_COUNT;
-        } else {
-            return NUM_TIMETABLE_SECTION_ITEMS;
-        }
-        case 1:
-        return NUM_ADVANCED_SECTION_ITEMS;
+        case REBBLE_SECTION_INDEX:
+            return NUM_REBBLE_SECTION_ITEMS;
+            break;
+        case TIMETABLE_SECTION_INDEX:
+            if (has_timetables) {
+                return TIMETABLE_COUNT;
+            } else {
+                return NUM_TIMETABLE_SECTION_ITEMS;
+            }
+            break;
+        case ADVANCED_SECTION_INDEX:
+            return NUM_ADVANCED_SECTION_ITEMS;
+            break;
         default:
-        return 0;
+            return 0;
     }
 }
 
@@ -103,53 +115,65 @@ static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t s
 
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
     switch (section_index) {
-        case 0:
-        menu_cell_round_compatible_header_draw(ctx, cell_layer, "Select Timetable");
-        break;
-        case 1:
-        menu_cell_round_compatible_header_draw(ctx, cell_layer, "Advanced");
-        break;
+        case REBBLE_SECTION_INDEX:
+            menu_cell_round_compatible_header_draw(ctx, cell_layer, "Information");
+            break;
+        case TIMETABLE_SECTION_INDEX:
+            menu_cell_round_compatible_header_draw(ctx, cell_layer, "Select Timetable");
+            break;
+        case ADVANCED_SECTION_INDEX:
+            menu_cell_round_compatible_header_draw(ctx, cell_layer, "Advanced");
+            break;
     }
 }
 
 static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuIndex *cell_index, void *data) {
     switch (cell_index->section) {
-        case 0:
-        if(!has_timetables && cell_index->row == 0) {
-            menu_cell_basic_draw(ctx, cell_layer, "Create one now!", NULL, NULL);
-        } else {
-            menu_cell_basic_draw(ctx, cell_layer, TIMETABLE_NAMES[cell_index->row], NULL, NULL);
-        }
-        break;
-        case 1:
-        switch (cell_index->row) {
-            case 0:
-            menu_cell_basic_draw(ctx, cell_layer, "Delete all pins", NULL, NULL);
+        case REBBLE_SECTION_INDEX:
+            switch (cell_index->row) {
+                case 0:
+                menu_cell_basic_draw(ctx, cell_layer, "Rebble information", NULL, NULL);
+                break;
+            }
             break;
-        }
-        break;
+        case TIMETABLE_SECTION_INDEX:
+            if (!has_timetables && cell_index->row == 0) {
+                menu_cell_basic_draw(ctx, cell_layer, "Create one now!", NULL, NULL);
+            } else {
+                menu_cell_basic_draw(ctx, cell_layer, TIMETABLE_NAMES[cell_index->row], NULL, NULL);
+            }
+            break;    
+        case ADVANCED_SECTION_INDEX:
+            switch (cell_index->row) {
+                case 0:
+                menu_cell_basic_draw(ctx, cell_layer, "Delete all pins", NULL, NULL);
+                break;
+            }
+            break;
     }
 }
 
 static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
     switch (cell_index->section) {
-        case 0:
-        if (!has_timetables) {
-            win_tutorial_create();
-        } else {
-            int selected_timetable = cell_index->row;
-            win_menu_week_create(selected_timetable);
-        }
-        break;
-
-        case 1:
-        switch (cell_index->row) {
-            case 0:
-            // Delete all pins selected
-            delete_pins();
+        case REBBLE_SECTION_INDEX:
+            win_rebble_create();
+            break;       
+        case TIMETABLE_SECTION_INDEX:
+            if (!has_timetables) {
+                win_tutorial_create();
+            } else {
+                int selected_timetable = cell_index->row;
+                win_menu_week_create(selected_timetable);
+            }
             break;
-        }
-        break;
+        case ADVANCED_SECTION_INDEX:
+            switch (cell_index->row) {
+                case 0:
+                // Delete all pins selected
+                delete_pins();
+                break;
+            }
+            break;
     }
 }
 
